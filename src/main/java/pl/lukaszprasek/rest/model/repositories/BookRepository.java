@@ -6,6 +6,7 @@ import pl.lukaszprasek.rest.model.BookEntity;
 
 @Repository
 public interface BookRepository extends CrudRepository<BookEntity, Integer> {
-    boolean existsByTitle (String title);
-    boolean existsById (int id);
+    boolean existsByTitle(String title);
+    boolean existsById(int id);
+
 }

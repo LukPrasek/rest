@@ -23,7 +23,18 @@ public class RestController {
         return bookEntity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping(value = "/books", produces = "application/json")
+    @GetMapping(value = "/booking/{title}", produces = "application/json")
+    public ResponseEntity getBookByTitle(@PathVariable("title") String title) {
+        boolean ifExists = bookRepository.existsByTitle(title);
+        System.out.println("Znajduje"+ifExists);
+        if (ifExists) {
+            return ResponseEntity.ok(ifExists);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping(value = "/book", produces = "application/json")
     public ResponseEntity getBooks() {
         return ResponseEntity.ok(bookRepository.findAll());
     }
@@ -36,8 +47,10 @@ public class RestController {
 //       }
 //        return ResponseEntity.ok(bookEntity.get());//jak znajdzie ma nam dac obiekt
 //    }
+
+
     @PostMapping(value = "/book", consumes = "application/json")
-    public ResponseEntity createBook(@RequestHeader ("key") String key, @RequestBody BookEntity bookEntity) {
+    public ResponseEntity createBook(@RequestHeader("key") String key, @RequestBody BookEntity bookEntity) {
         if (checkKey(key)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         //walidacja wszystkich pól
         if (bookRepository.existsByTitle(bookEntity.getTitle())) {
@@ -48,26 +61,27 @@ public class RestController {
     }
 
     @DeleteMapping(value = "book/{id}")
-    public ResponseEntity deleteBook(@RequestHeader ("key") String key,@PathVariable("id") int id) {
+    public ResponseEntity deleteBook(@RequestHeader("key") String key, @PathVariable("id") int id) {
         if (checkKey(key)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         bookRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     private boolean checkKey(String key) {
-        if (key.equals(Config.API_KEY)){
+        if (!key.equals(Config.API_KEY)) {
             return true;
         }
         return false;
     }
 
     @PutMapping(value = "/book", consumes = "application/json")
-    public ResponseEntity editBook(@RequestHeader ("key") String key,@RequestBody BookEntity bookEntity) {
-        if (!bookRepository.existsById(bookEntity.getId())){
+    public ResponseEntity editBook(@RequestHeader("key") String key, @RequestBody BookEntity bookEntity) {
+        if (checkKey(key)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        if (!bookRepository.existsById(bookEntity.getId())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         bookRepository.save(bookEntity);
-
         return ResponseEntity.ok().build();
     }
 }
